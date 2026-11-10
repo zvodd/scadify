@@ -1,0 +1,15 @@
+{
+  "name": "scadify",
+  "displayName": "SCADify",
+  "description": "Make 3D models: tiny deterministic recipes (OpenSCAD inside) compiled to clean glb, stl, 3mf and usdz solids, with in-process previews.",
+  "version": "0.1.0",
+  "author": { "name": "SCADify contributors" },
+  "license": "MIT",
+  "keywords": ["3d", "openscad", "cad", "glb", "stl", "usdz", "mcp"],
+  "mcpServers": {
+    "scadify": {
+      "command": "node",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/src/scadify-cli.mjs"]
+    }
+  }
+}

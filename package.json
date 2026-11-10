@@ -1,0 +1,19 @@
+{
+  "name": "scadify",
+  "version": "0.1.0",
+  "description": "Deterministic recipes -> clean 3D solids (OpenSCAD/Manifold WASM), exported to GLB/STL/3MF/USDZ.",
+  "type": "module",
+  "bin": {
+    "scadify": "src/scadify-cli.mjs"
+  },
+  "scripts": {
+    "test": "node --test tests/"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "openscad-wasm-prebuilt": "^1.2.0"
+  }
+}

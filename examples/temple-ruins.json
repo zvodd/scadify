@@ -1,0 +1,28 @@
+{
+ "kind": "scad",
+ "title": "temple-ruins",
+ "units": "dm",
+ "seed": 7,
+ "program": "\n// Temple ruins: stepped stylobate, 10 hex columns (some broken), crumbled cella, rubble. Z-up, mm.\nR = rands(0, 1, 600, seed);\nTOP = 4.5;          // top of the stylobate\nH   = 14;           // full column height\n\n// block centred on c=[x,y], base z0, w x d x h, yaw in degrees, top = taper factor (<1 narrows the top)\nmodule blk(c, z0, w, d, h, yaw = 0, top = 1)\n  translate([c[0], c[1], z0]) rotate(yaw) linear_extrude(height = h, scale = top) square([w, d], center = true);\n\n// hexagonal column (lathe with 6 sides)\nmodule column(h, r)\n  rotate_extrude($fn = 6) polygon([[0,0],[r*1.2,0],[r*1.2,h*0.07],[r,h*0.09],[r*0.78,h],[0,h]]);\n\n// fallen drum lying on its side, axis horizontal, yaw in degrees\nmodule drum(p, z, len, yaw, r = 2)\n  translate([p[0], p[1], z]) rotate([0, 0, yaw]) rotate([0, 90, 0]) cylinder(h = len, r1 = r*0.95, r2 = r*0.9, $fn = 6);\n\n// [x, y, broken height]; 0 means intact\ncols = [[-18,-12,0],[-6,-12,0],[6,-12,9],[18,-12,4.5],[-18,12,0],[-6,12,11],[6,12,0],[18,12,0],[-18,0,7],[18,0,2.5]];\n\nmodule steps()    { for (i = [0:2]) blk([0,0], i*1.5, [60,54,48][i], [44,38,32][i], 1.5); }\nmodule columns()  { for (c = cols) translate([c[0], c[1], TOP]) column(c[2] > 0 ? c[2] : H, 2); }\nmodule capitals() { for (c = cols) if (c[2] == 0) blk([c[0], c[1]], TOP + H, 5.4, 5.4, 1.3); }\nmodule lintels()  { blk([-12,-12], TOP + H + 1.3, 14.5, 3.4, 2.6); blk([12,12], TOP + H + 1.3, 14.5, 3.4, 2.6); }\n\n// wall of stacked courses; each segment keeps 0-4 courses (the crumble)\nmodule wall(p0, p1, t, off) {\n  len = norm(p1 - p0); n = max(1, round(len / 5)); yaw = atan2(p1[1]-p0[1], p1[0]-p0[0]);\n  for (i = [0:n-1]) {\n    c = p0 + (p1 - p0) * ((i + 0.5) / n);  k = floor(R[off + i] * 5);\n    if (k > 0) for (j = [0:k-1]) blk(c, TOP + j*2.6, len/n - 0.15, t, 2.6, yaw);\n  }\n}\nmodule cella() {\n  wall([-10,8],[10,8],2.6,0); wall([-10,-4],[-10,8],2.6,10); wall([10,-4],[10,8],2.6,20);\n  blk([-10,-5], TOP, 2.6, 2.6, 6);  blk([10,-5], TOP, 2.6, 2.6, 3.2);       // broken door jambs\n  blk([0,3], TOP, 5, 5, 2.4);  blk([0,3], TOP + 2.4, 3.4, 3.4, 1.2);          // altar\n}\nmodule fallen() {\n  drum([-26,-29], 2, 7, 6);  drum([-18.5,-28.4], 2, 7, 0);  drum([-10,-30.5], 2, 6, -20);\n  drum([-3,-4], TOP + 1.9, 8.94, -26.6, 1.9);                                 // drum lying on the top step\n  blk([14,-29], 0, 5.4, 5.4, 1.3, 28.6);  blk([32,-12], 0, 12, 3.4, 2.6, 51.6);   // capital + lintel chunk\n}\nmodule rubble() {\n  for (i = [0:33]) {                                   // ground rubble outside the base footprint\n    x = (R[100+i*7]*2-1)*40;  y = (R[101+i*7]*2-1)*36;\n    if (!(abs(x) < 33 && abs(y) < 25))\n      blk([x,y], 0, 1.2+R[102+i*7]*2, 1.2+R[103+i*7]*2, 0.8+R[104+i*7]*1.4, R[105+i*7]*180, 0.6+R[106+i*7]*0.4);\n  }\n  for (i = [0:6])                                      // rubble on the platform\n    blk([(R[400+i*6]*2-1)*22, -14+R[401+i*6]*8], TOP, 1+R[402+i*6]*1.4, 1+R[403+i*6]*1.4, 0.6+R[404+i*6]*0.8, R[405+i*6]*180, 0.7);\n}\nmodule moss() {\n  for (p = [[-24,-18,3,2],[22,-19,4,2.2],[0,-17,5,2],[-27,10,3,2],[26,9,3,2.5]])\n    blk([p[0],p[1]], 3.0, p[2], p[3], 0.25, p[0]*7, 0.8);\n}\n",
+ "parts": {
+  "steps": "steps()",
+  "columns": "columns()",
+  "capitals": "capitals()",
+  "lintels": "lintels()",
+  "cella": "cella()",
+  "fallen": "fallen()",
+  "rubble": "rubble()",
+  "moss": "moss()"
+ },
+ "params": {},
+ "tints": {
+  "steps": "#bfa97e",
+  "columns": "#c9b48a",
+  "capitals": "#b39d74",
+  "lintels": "#c9b48a",
+  "cella": "#b39d74",
+  "fallen": "#c9b48a",
+  "rubble": "#8f8268",
+  "moss": "#6b7f4a"
+ }
+}
