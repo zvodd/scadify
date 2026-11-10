@@ -4,6 +4,8 @@
   "description": "Make 3D models: tiny deterministic recipes (OpenSCAD inside) compiled to clean glb, stl, 3mf and usdz solids, with in-process previews.",
   "version": "0.1.0",
   "author": { "name": "SCADify contributors" },
+  "repository": "https://github.com/zvodd/scadify",
+  "homepage": "https://github.com/zvodd/scadify",
   "license": "MIT",
   "keywords": ["3d", "openscad", "cad", "glb", "stl", "usdz", "mcp"],
   "mcpServers": {
