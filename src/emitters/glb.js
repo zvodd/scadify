@@ -1,7 +1,15 @@
 // Clean GLB: mesh only. Flat tree = one node per part (mesh under it). No cameras, lights, ground, hierarchy.
-// Coordinates are written in METRES (recipe units scaled by the unit's metres-per-unit), z-up; asset.extras records units 'm' / metersPerUnit 1
+// Coordinates are written in METRES (recipe units scaled by the unit's metres-per-unit) and converted from the recipe's z-up to glTF's
+// y-up (x, y, z) -> (x, z, -y): up stays up, the model front (-y) faces glTF +Z. A proper rotation, so triangle winding is unchanged.
+// asset.extras records units 'm' / metersPerUnit 1
 // since glTF has no ratified units extension. Node, mesh and material names are the part names.
 import { positionsInMeters, uniqueNames } from './common.js';
+
+function zUpToYUp(pos) {
+  const out = new Float32Array(pos.length);
+  for (let i = 0; i < pos.length; i += 3) { out[i] = pos[i]; out[i + 1] = pos[i + 2]; out[i + 2] = -pos[i + 1]; }
+  return out;
+}
 
 const hex = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16) / 255);
 const pad4 = (b, fill = 0) => (b.length % 4 ? Buffer.concat([b, Buffer.alloc(4 - (b.length % 4), fill)]) : b);
@@ -12,7 +20,7 @@ function build(recipe, mesh) {
   const view = (b, target) => { const bb = pad4(b); bufferViews.push({ buffer: 0, byteOffset: len, byteLength: b.length, target }); bufs.push(bb); len += bb.length; return bufferViews.length - 1; };
   const names = uniqueNames(mesh.parts.map((p) => p.name));
   for (const [pi, part] of mesh.parts.entries()) {
-    const p = { ...part, positions: positionsInMeters(part.positions, recipe) }; const name = names[pi];
+    const p = { ...part, positions: zUpToYUp(positionsInMeters(part.positions, recipe)) }; const name = names[pi];
     const min = [Infinity, Infinity, Infinity], max = [-Infinity, -Infinity, -Infinity];
     for (let i = 0; i < p.positions.length; i += 3) for (let a = 0; a < 3; a++) { min[a] = Math.min(min[a], p.positions[i + a]); max[a] = Math.max(max[a], p.positions[i + a]); }
     const pv = view(Buffer.from(p.positions.buffer, p.positions.byteOffset, p.positions.byteLength), 34962);
@@ -24,7 +32,7 @@ function build(recipe, mesh) {
     nodes.push({ name, mesh: meshes.length - 1 });
   }
   const json = {
-    asset: { version: '2.0', generator: 'scadify', extras: { units: 'm', metersPerUnit: 1, sourceUnits: recipe.units, upAxis: 'Z', title: recipe.title } },
+    asset: { version: '2.0', generator: 'scadify', extras: { units: 'm', metersPerUnit: 1, sourceUnits: recipe.units, upAxis: 'Y', title: recipe.title } },
     scene: 0, scenes: [{ name: recipe.title, nodes: nodes.map((_, i) => i) }],
     nodes, meshes, materials, accessors, bufferViews, buffers: [{ byteLength: len }],
   };

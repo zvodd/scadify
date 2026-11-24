@@ -101,7 +101,7 @@ test('units: glb/usd are written in metres (metersPerUnit 1); stl/3mf in millime
     const glb = readFileSync((await h.export_solid({ ref, format: 'glb' })).path);
     const g = JSON.parse(glb.toString('utf8', 20, 20 + glb.readUInt32LE(12)));
     assert.equal(g.asset.extras.units, 'm'); assert.equal(g.asset.extras.metersPerUnit, 1); assert.equal(g.asset.extras.sourceUnits, units);
-    near(g.accessors[0].max[2], 30 * mpu, 1e-5); near(g.accessors[0].max[0] - g.accessors[0].min[0], 10 * mpu, 1e-5); // metres
+    near(g.accessors[0].max[1], 30 * mpu, 1e-5); near(g.accessors[0].max[0] - g.accessors[0].min[0], 10 * mpu, 1e-5); // metres
     const usda = readFileSync((await h.export_solid({ ref, format: 'usda' })).path, 'utf8');
     assert.match(usda, /metersPerUnit = 1\n/);
     const ext = usda.match(/float3\[\] extent = \[\([^)]*\), \(([^)]*)\)\]/)[1].split(',').map(Number); near(ext[2], 30 * mpu, 1e-5);
@@ -146,8 +146,8 @@ test('every format: export, re-read, assert structure', async () => {
   assert.equal(g.nodes.length, 2); assert.equal(g.meshes.length, 2); assert.deepEqual(g.nodes.map((n) => n.name).sort(), ['standoffs', 'tray']);
   for (const n of g.nodes) { assert.ok(!n.children && !n.camera && !n.matrix && !n.translation && !n.skin); }
   for (const k of ['cameras', 'skins', 'animations', 'extensions', 'extensionsUsed']) assert.equal(g[k], undefined, k);
-  assert.equal(g.asset.extras.units, 'm'); assert.equal(g.asset.extras.metersPerUnit, 1); assert.equal(g.asset.extras.sourceUnits, 'dm'); assert.equal(g.asset.extras.upAxis, 'Z');
-  const ti = g.nodes.findIndex((n) => n.name === 'tray'); const tray = g.accessors[g.meshes[g.nodes[ti].mesh].primitives[0].attributes.POSITION]; near(tray.max[0] - tray.min[0], 4); near(tray.max[2] - tray.min[2], 1.2); // 40 x 12 dm in metres
+  assert.equal(g.asset.extras.units, 'm'); assert.equal(g.asset.extras.metersPerUnit, 1); assert.equal(g.asset.extras.sourceUnits, 'dm'); assert.equal(g.asset.extras.upAxis, 'Y');
+  const ti = g.nodes.findIndex((n) => n.name === 'tray'); const tray = g.accessors[g.meshes[g.nodes[ti].mesh].primitives[0].attributes.POSITION]; near(tray.max[0] - tray.min[0], 4); near(tray.max[1] - tray.min[1], 1.2); // 40 x 12 dm (height on glTF +Y) in metres
   assert.deepEqual(g.materials[g.meshes[g.nodes[ti].mesh].primitives[0].material].pbrMetallicRoughness.baseColorFactor.slice(0, 3).map((x) => +x.toFixed(2)), [0.25, 0.44, 0.69]);
   const gltf = JSON.parse(readFileSync(out.gltf.path, 'utf8')); assert.equal(gltf.nodes.length, 2);
   // STL: binary, count matches, bbox

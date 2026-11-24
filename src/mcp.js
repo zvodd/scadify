@@ -15,7 +15,7 @@ import { canonical } from './recipe.js';
 
 const VERSION = '0.1.0';
 export const FORMATS = {
-  glb: emitGLB, gltf: emitGLTF, stl: emitSTL, '3mf': emit3MF, usdz: emitUSDZ, usda: emitUSDA, scad: emitSCAD,
+  glb: emitGLB, usdz: emitUSDZ, gltf: emitGLTF, usda: emitUSDA, stl: emitSTL, '3mf': emit3MF, scad: emitSCAD,
   json: (recipe) => JSON.stringify(JSON.parse(canonical(recipe)), null, 2) + '\n',
 };
 
@@ -30,7 +30,7 @@ export const TOOLS = [
   { name: 'list_solids', description: 'List stored solid refs and titles.', inputSchema: { type: 'object', properties: {} } },
   { name: 'get_solid', description: 'Return the stored recipe JSON.', inputSchema: { type: 'object', properties: refProp, required: ['ref'] } },
   { name: 'update_solid', description: 'Edit a stored recipe in place: params merge; program/parts/tree/title/seed/tints replace.', inputSchema: { type: 'object', properties: { ...refProp, params: { type: 'object' }, program: { type: 'string' }, parts: { type: 'object' }, tree: { type: 'object' }, title: { type: 'string' }, seed: { type: 'integer' }, tints: { type: 'object' } }, required: ['ref'] } },
-  { name: 'export_solid', description: 'Compile deterministically and write a file. Returns { path, format, sizeBytes, sha256, ref }.', inputSchema: { type: 'object', properties: { ...refProp, format: { enum: Object.keys(FORMATS) } }, required: ['ref', 'format'] } },
+  { name: 'export_solid', description: 'Compile deterministically and write a file. Default to glb (game engines / viewers, y-up metres) and usdz (editing / DCC, z-up metres). Only use stl or 3mf when the user explicitly asks for 3D printing or those formats. Returns { path, format, sizeBytes, sha256, ref }.', inputSchema: { type: 'object', properties: { ...refProp, format: { enum: Object.keys(FORMATS), description: 'Prefer glb or usdz; stl/3mf only for printing on request.' } }, required: ['ref', 'format'] } },
   { name: 'render_turntable', description: 'Render 3-36 turntable PNG frames in-process (software rasterizer). Returns frame paths.', inputSchema: { type: 'object', properties: { ...refProp, frames: { type: 'integer', minimum: 3, maximum: 36 }, size: { type: 'integer', minimum: 32, maximum: 1024 }, elevation_deg: { type: 'number' } }, required: ['ref'] } },
   { name: 'render_shot', description: 'Render exactly one PNG from a chosen azimuth + elevation (software rasterizer). angle_deg 0 = the model front (-y); positive turns the camera around +z. Returns { path, size }.', inputSchema: { type: 'object', properties: { ...refProp, angle_deg: { type: 'number' }, elevation_deg: { type: 'number', minimum: -89, maximum: 89 }, size: { type: 'integer', minimum: 32, maximum: 1024 }, background: { type: 'string', description: "#rrggbb or 'transparent' (default #0C1019)" } }, required: ['ref'] } },
   { name: 'render_standard', description: 'Standard preview: one square PNG with a front-on shot (left) and an angled-high shot (right) side by side on the studio background. Returns { path, size, panels }.', inputSchema: { type: 'object', properties: { ...refProp, size: { type: 'integer', minimum: 64, maximum: 2048 }, background: { type: 'string', description: "#rrggbb or 'transparent' (default #0C1019)" } }, required: ['ref'] } },
